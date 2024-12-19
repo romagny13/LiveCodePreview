@@ -69,6 +69,12 @@
       <div class="bg-white p-4 rounded-lg shadow">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-medium text-gray-700">Aperçu</h3>
+          <button
+            id="refresh-btn"
+            class="refresh-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            Rafraîchir
+          </button>
         </div>
         <iframe
           id="preview"
@@ -83,6 +89,7 @@
       const jsEditor = document.getElementById("js-editor");
       const preview = document.getElementById("preview");
       const tabs = document.querySelectorAll(".tab");
+      const refreshBtn = document.getElementById("refresh-btn");
       const modeIndicator = document.getElementById("mode-indicator");
 
       let isFullPageMode = false;
@@ -160,6 +167,7 @@
       htmlEditor.addEventListener("input", updatePreview);
       cssEditor.addEventListener("input", updatePreview);
       jsEditor.addEventListener("input", updatePreview);
+      refreshBtn.addEventListener("click", updatePreview);
 
       updatePreview();
     </script>
