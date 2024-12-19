@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Code Editor with Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <header class="bg-white shadow-md mb-6">
+      <div
+        class="container mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <!-- Logo -->
+        <a href="#" class="flex items-center">
+          <img
+            src="Assets/logo.PNG"
+            alt="Logo du site"
+            title="Live Code Preview"
+          />
+        </a>
+      </div>
+    </header>
+
+    <div class="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Editor Section -->
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex gap-2">
+            <button
+              class="tab px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none"
+              data-editor="html"
+            >
+              HTML
+            </button>
+            <button
+              class="tab px-4 py-2 bg-gray-200 text-gray-700 rounded-md focus:outline-none"
+              data-editor="css"
+            >
+              CSS
+            </button>
+            <button
+              class="tab px-4 py-2 bg-gray-200 text-gray-700 rounded-md focus:outline-none"
+              data-editor="js"
+            >
+              JavaScript
+            </button>
+          </div>
+          <span id="mode-indicator" class="text-sm text-gray-500"></span>
+        </div>
+        <textarea
+          id="html-editor"
+          class="editor active w-full h-60 p-3 border border-gray-300 rounded-md font-mono text-sm resize-y focus:ring-2 focus:ring-blue-500"
+          placeholder="Entrez votre code HTML ici"
+        ></textarea>
+        <textarea
+          id="css-editor"
+          class="editor hidden w-full h-60 p-3 border border-gray-300 rounded-md font-mono text-sm resize-y focus:ring-2 focus:ring-blue-500"
+          placeholder="Entrez votre code CSS ici"
+        ></textarea>
+        <textarea
+          id="js-editor"
+          class="editor hidden w-full h-60 p-3 border border-gray-300 rounded-md font-mono text-sm resize-y focus:ring-2 focus:ring-blue-500"
+          placeholder="Entrez votre code JavaScript ici"
+        ></textarea>
+      </div>
+
+      <!-- Preview Section -->
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-700">Aperçu</h3>
+          <button
+            id="refresh-btn"
+            class="refresh-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            Rafraîchir
+          </button>
+        </div>
+        <iframe
+          id="preview"
+          class="w-full h-96 border border-gray-300 rounded-md"
+        ></iframe>
+      </div>
+    </div>
+
+    <script>
+      const htmlEditor = document.getElementById("html-editor");
+      const cssEditor = document.getElementById("css-editor");
+      const jsEditor = document.getElementById("js-editor");
+      const preview = document.getElementById("preview");
+      const tabs = document.querySelectorAll(".tab");
+      const refreshBtn = document.getElementById("refresh-btn");
+      const modeIndicator = document.getElementById("mode-indicator");
+
+      let isFullPageMode = false;
+
+      function detectFullPageHTML(html) {
+        const hasDoctype = /<!DOCTYPE/i.test(html);
+        const hasHtmlTag = /<html/i.test(html);
+        const hasHeadTag = /<head/i.test(html);
+        const hasBodyTag = /<body/i.test(html);
+
+        return hasDoctype && hasHtmlTag && hasHeadTag && hasBodyTag;
+      }
+
+      function updatePreview() {
+        const html = htmlEditor.value;
+        if (detectFullPageHTML(html)) {
+          if (!isFullPageMode) {
+            isFullPageMode = true;
+            modeIndicator.textContent = "Mode page complète";
+          }
+          const previewDocument = preview.contentDocument;
+          previewDocument.open();
+          previewDocument.write(html);
+          previewDocument.close();
+        } else {
+          if (isFullPageMode) {
+            isFullPageMode = false;
+            modeIndicator.textContent = "Mode composant";
+          }
+
+          const css = cssEditor.value;
+          const js = jsEditor.value;
+
+          const previewContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>${css}</style>
+            </head>
+            <body>
+              ${html}
+              <script>${js}<\/script>
+            </body>
+            </html>
+          `;
+
+          const previewDocument = preview.contentDocument;
+          previewDocument.open();
+          previewDocument.write(previewContent);
+          previewDocument.close();
+        }
+      }
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          tabs.forEach((t) =>
+            t.classList.replace("bg-blue-500", "bg-gray-200")
+          );
+          tabs.forEach((t) =>
+            t.classList.replace("text-white", "text-gray-700")
+          );
+          tab.classList.replace("bg-gray-200", "bg-blue-500");
+          tab.classList.replace("text-gray-700", "text-white");
+
+          const editorType = tab.dataset.editor;
+          document.querySelectorAll(".editor").forEach((editor) => {
+            editor.classList.add("hidden");
+          });
+          document
+            .getElementById(`${editorType}-editor`)
+            .classList.remove("hidden");
+        });
+      });
+
+      htmlEditor.addEventListener("input", updatePreview);
+      cssEditor.addEventListener("input", updatePreview);
+      jsEditor.addEventListener("input", updatePreview);
+      refreshBtn.addEventListener("click", updatePreview);
+
+      updatePreview();
+    </script>
+  </body>
+</html>
